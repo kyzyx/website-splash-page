@@ -1,17 +1,24 @@
 #ed {
-  width: 50%;
-  height: 100%;
-  float: left;
-
   background-color: #FFAAAA;
 }
 
 #con {
+  background-color: #AAAAFF;
+}
+
+.half-panel {
+  position: relative;
   width: 50%;
   height: 100%;
-  float: right;
+  float: left;
+}
 
-  background-color: #AAAAFF;
+.sub-link {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
 body {
