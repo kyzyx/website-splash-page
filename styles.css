@@ -1,0 +1,19 @@
+#ed {
+  width: 50%;
+  height: 100%;
+  float: left;
+
+  background-color: #FFAAAA;
+}
+
+#con {
+  width: 50%;
+  height: 100%;
+  float: right;
+
+  background-color: #AAAAFF;
+}
+
+body {
+  margin: 0;
+}
