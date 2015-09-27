@@ -53,6 +53,15 @@ function ed() {
     var scene = new THREE.Scene();
     var camera = new THREE.OrthographicCamera(0, 2.5*w/h, 1.25, -1.25, 0.1, 100);
 
+    var resizeCanvas = function() {
+        var nw = container.offsetWidth;
+        var nh = container.offsetHeight;
+        renderer.setSize(nw, nh);
+        camera.right = 2.5*nw/nh;
+        camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resizeCanvas, false);
+
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize( container.offsetWidth, container.offsetHeight );
     container.appendChild(renderer.domElement);
