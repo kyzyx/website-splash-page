@@ -1,9 +1,7 @@
 #ed {
-  background-color: #FFAAAA;
 }
 
 #con {
-  background-color: #AAAAFF;
 }
 
 .half-panel {
@@ -11,6 +9,11 @@
   width: 50%;
   height: 100%;
   float: left;
+
+  overflow: hidden;
+
+  background-color: black;
+  color: white;
 }
 
 .sub-link {
