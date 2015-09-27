@@ -43,7 +43,43 @@ function con() {
   generateTriangles();
 }
 
+
+// -----------------------------------------
+
 function ed() {
+    var container = document.getElementById("ed");
+    var w = container.offsetWidth;
+    var h = container.offsetHeight;
+    var scene = new THREE.Scene();
+    var camera = new THREE.OrthographicCamera(0, 2.5*w/h, 1.25, -1.25, 0.1, 100);
+
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize( container.offsetWidth, container.offsetHeight );
+    container.appendChild(renderer.domElement);
+
+    var geometry = new THREE.SphereGeometry(1, 32, 32);
+    var material = new THREE.MeshPhongMaterial({color: 0xaaaaaa});
+    var sphere = new THREE.Mesh(geometry, material);
+    var light = new THREE.DirectionalLight(0xffffff, 0.9);
+    var ambient = new THREE.AmbientLight(0x3A3A3A);
+    light.position.set(1,1,1);
+
+    scene.add(light);
+    scene.add(ambient);
+    scene.add(sphere);
+    camera.position.x = 0;
+    camera.position.y = 0;
+    camera.position.z = 50;
+
+    var lastUpdate = null;
+    var ed_render = function(currTime) {
+        requestAnimationFrame(ed_render);
+        lastUpdate = lastUpdate || currTime - 1000/60;
+        var delta = Math.min(100, currTime - lastUpdate);
+        lastUpdate = currTime;
+        renderer.render(scene, camera);
+    };
+    ed_render();
 }
 
 con();
