@@ -50,46 +50,121 @@ function ed() {
     var container = document.getElementById("ed");
     var w = container.offsetWidth;
     var h = container.offsetHeight;
-    var scene = new THREE.Scene();
+    var vh = 0.45;
+    var vw = 0.6;
+    var ps = h/2.5;
     var camera = new THREE.OrthographicCamera(0, 2.5*w/h, 1.25, -1.25, 0.1, 100);
+    camera.position.x = 0;
+    camera.position.y = 0;
+    camera.position.z = 50;
+
+    var scene = SharedScene();
+
+    var geometry = new THREE.SphereGeometry(1, 24, 24);
+
+    var tex = THREE.ImageUtils.loadTexture("images/earthmap1k.jpg");
+    tex.minFilter = THREE.LinearFilter;
+    var bumptex = THREE.ImageUtils.loadTexture("images/earthbump1k.jpg");
+    bumptex.minFilter = THREE.LinearFilter;
+    var spectex = THREE.ImageUtils.loadTexture("images/earthspec1k.jpg");
+    spectex.minFilter = THREE.LinearFilter;
+    var geoms = [
+        geometry,
+        geometry,
+        geometry,
+    ];
+    var mats = [
+        new THREE.MeshPhongMaterial({color: 0xaaaaaa}),
+        new THREE.MeshPhongMaterial({
+            map: tex,
+            bumpMap: bumptex,
+            bumpScale: 0.02,
+            specularMap: spectex,
+            specular: 0x333333
+        }),
+        new THREE.MeshBasicMaterial({wireframe: true}),
+    ];
+    var spheres = [];
+    var subviews = [];
+    scene.addShared("dirlight", function() {
+        var light = new THREE.DirectionalLight(0xffffff, 0.9);
+        light.position.set(1,1,1);
+        return light;
+    });
+    scene.addShared("ambientlight", function() {
+        return new THREE.AmbientLight(0x3A3A3A);
+    });
+    for (var i = 0; i < mats.length; i++) {
+        scene.addScene();
+        spheres.push(new THREE.Mesh(geoms[i], mats[i]));
+        if (i > 0) {
+            var subview = Subview(scene.getScene(i), ps, vw, vh);
+            subviews.push(subview);
+            scene.addSingle(0, subview.getMesh());
+        }
+    }
+    scene.addUnique("sphere", spheres);
+
+    var mainrenderer = new THREE.WebGLRenderer();
+    mainrenderer.setPixelRatio( window.devicePixelRatio );
+    mainrenderer.setSize(w, h);
+    mainrenderer.autoClear = false;
+
+    container.appendChild(mainrenderer.domElement);
 
     var resizeCanvas = function() {
         var nw = container.offsetWidth;
         var nh = container.offsetHeight;
-        renderer.setSize(nw, nh);
+        mainrenderer.setSize(nw, nh);
         camera.right = 2.5*nw/nh;
         camera.updateProjectionMatrix();
     }
     window.addEventListener('resize', resizeCanvas, false);
 
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize( container.offsetWidth, container.offsetHeight );
-    container.appendChild(renderer.domElement);
-
-    var geometry = new THREE.SphereGeometry(1, 32, 32);
-    var material = new THREE.MeshPhongMaterial({color: 0xaaaaaa});
-    var sphere = new THREE.Mesh(geometry, material);
-    var light = new THREE.DirectionalLight(0xffffff, 0.9);
-    var ambient = new THREE.AmbientLight(0x3A3A3A);
-    light.position.set(1,1,1);
-
-    scene.add(light);
-    scene.add(ambient);
-    scene.add(sphere);
-    camera.position.x = 0;
-    camera.position.y = 0;
-    camera.position.z = 50;
-
     var lastUpdate = null;
+    var simulatePosition = function(state, dt) {
+        var p = state.p;
+        var v = state.v;
+
+        p = p.addScaledVector(v,dt);
+        if (p.lengthSq() > 0.8) {
+            var n = new THREE.Vector2(-p.x, -p.y);
+            n.normalize();
+            var s = n.dot(v);
+            v = v.addScaledVector(n, -2*s);
+        }
+        if (p.x < vw/3) v.x = -v.x;
+        return {p: p, v: v};
+    };
+    var states = [
+        {p:new THREE.Vector2(0.3, 0.4),  v:new THREE.Vector2(0.8, -1.4)},
+        {p:new THREE.Vector2(0.5, -0.4),  v:new THREE.Vector2(-0.8, 0.8)},
+    ];
     var ed_render = function(currTime) {
         requestAnimationFrame(ed_render);
         lastUpdate = lastUpdate || currTime - 1000/60;
         var delta = Math.min(100, currTime - lastUpdate);
         lastUpdate = currTime;
-        renderer.render(scene, camera);
+        mainrenderer.clear();
+        subviews[0].render(mainrenderer, 0.3, 0.4);
+        subviews[1].render(mainrenderer, 0.5, -0.4);
+        scene.each("sphere", function(s) {
+            var m = new THREE.Matrix4();
+            var axis = new THREE.Vector3(0.05,1,0);
+            axis.normalize();
+            m.makeRotationAxis(axis, 0.001);
+            s.matrix.multiply(m);
+            s.rotation.setFromRotationMatrix(s.matrix);
+        });
+        for (var i = 0; i < subviews.length; i++) {
+            states[i] = simulatePosition(states[i], 0.001);
+            subviews[i].render(mainrenderer, states[i].p.x-vw/2, states[i].p.y+vh/2);
+        }
+        mainrenderer.render(scene.getScene(0), camera);
     };
     ed_render();
 }
+
 
 con();
 ed();
