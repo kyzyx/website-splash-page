@@ -4,6 +4,32 @@
 #con {
 }
 
+#con .circle {
+  position: absolute;
+  top: 10vh;
+  right: 0;
+
+  height: 80vh;
+  width: 40vh;
+
+  border-radius: 40vh 0 0 40vh;
+
+  overflow: hidden;
+}
+
+#con .triangle {
+  position: absolute;
+
+  width: 0;
+  height: 0;
+
+  border-style: solid;
+  border-width: 0 5.6vh 9.7vh;
+  border-color: transparent transparent white;
+
+  opacity: 0.5;
+}
+
 .half-panel {
   position: relative;
   width: 50%;
