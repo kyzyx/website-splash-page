@@ -94,14 +94,21 @@ function ed() {
         new THREE.MeshBasicMaterial({wireframe: true}),
         new THREE.MeshPhongMaterial({color: 0xcccccc, shading: THREE.FlatShading}),
     ];
-    var states = [
-        {p:new THREE.Vector2(0.3, 0.4),  v:new THREE.Vector2(0.9, -1.2)},
-        {p:new THREE.Vector2(0.3, 0.0),  v:new THREE.Vector2(0.3, -2.3)},
-        {p:new THREE.Vector2(0.4, 0.2),  v:new THREE.Vector2(-0.1, 3.0)},
-        {p:new THREE.Vector2(0.5, -0.4),  v:new THREE.Vector2(-0.8, 0.9)},
-    ];
     var spheres = [];
     var subviews = [];
+    var states = [];
+    for (var i = 0; i < mats.length; i++) {
+        var pt = new THREE.Vector2(0,0);
+        do {
+            pt.x = 2*Math.random()-1;
+            pt.y = 2*Math.random()-1;
+        } while (pt.lengthSq() > 1 || pt.x < vw/2);
+
+        var theta = Math.random()*2*Math.PI;
+        var speed = 1.5*(Math.random()+1);
+        var v = new THREE.Vector2(speed*Math.sin(theta), speed*Math.cos(theta));
+        states.push({p: pt, v: v});
+    }
     scene.addShared("dirlight1", function() {
         var light = new THREE.DirectionalLight(0xffffff, 0.9);
         light.position.set(1,1,1);
