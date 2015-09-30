@@ -62,16 +62,20 @@ function ed() {
 
     var geometry = new THREE.SphereGeometry(1, 24, 24);
 
-    var tex = THREE.ImageUtils.loadTexture("images/earthmap1k.jpg");
+    var tex = THREE.ImageUtils.loadTexture("images/earthmapbw1k.jpg");
     tex.minFilter = THREE.LinearFilter;
     var bumptex = THREE.ImageUtils.loadTexture("images/earthbump1k.jpg");
     bumptex.minFilter = THREE.LinearFilter;
+    var moonbumptex = THREE.ImageUtils.loadTexture("images/moonbumpmap.jpg");
+    moonbumptex.minFilter = THREE.LinearFilter;
     var spectex = THREE.ImageUtils.loadTexture("images/earthspec1k.jpg");
     spectex.minFilter = THREE.LinearFilter;
     var geoms = [
         geometry,
         geometry,
         geometry,
+        geometry,
+        new THREE.SphereGeometry(1, 12, 8),
     ];
     var mats = [
         new THREE.MeshPhongMaterial({color: 0xaaaaaa}),
@@ -82,13 +86,30 @@ function ed() {
             specularMap: spectex,
             specular: 0x333333
         }),
+        new THREE.MeshPhongMaterial({
+            color: 0x999999,
+            bumpMap: moonbumptex,
+            bumpScale: 0.04,
+        }),
         new THREE.MeshBasicMaterial({wireframe: true}),
+        new THREE.MeshPhongMaterial({color: 0xcccccc, shading: THREE.FlatShading}),
+    ];
+    var states = [
+        {p:new THREE.Vector2(0.3, 0.4),  v:new THREE.Vector2(0.9, -1.2)},
+        {p:new THREE.Vector2(0.3, 0.0),  v:new THREE.Vector2(0.3, -2.3)},
+        {p:new THREE.Vector2(0.4, 0.2),  v:new THREE.Vector2(-0.1, 3.0)},
+        {p:new THREE.Vector2(0.5, -0.4),  v:new THREE.Vector2(-0.8, 0.9)},
     ];
     var spheres = [];
     var subviews = [];
-    scene.addShared("dirlight", function() {
+    scene.addShared("dirlight1", function() {
         var light = new THREE.DirectionalLight(0xffffff, 0.9);
         light.position.set(1,1,1);
+        return light;
+    });
+    scene.addShared("dirlight2", function() {
+        var light = new THREE.DirectionalLight(0x555555, 0.9);
+        light.position.set(-1,-1,-1);
         return light;
     });
     scene.addShared("ambientlight", function() {
@@ -127,40 +148,38 @@ function ed() {
         var v = state.v;
 
         p = p.addScaledVector(v,dt);
-        if (p.lengthSq() > 0.8) {
+        if (p.lengthSq() > 1.0) {
             var n = new THREE.Vector2(-p.x, -p.y);
             n.normalize();
             var s = n.dot(v);
             v = v.addScaledVector(n, -2*s);
         }
-        if (p.x < vw/3) v.x = -v.x;
+        if (p.x < vw/2) v.x = -v.x;
         return {p: p, v: v};
     };
-    var states = [
-        {p:new THREE.Vector2(0.3, 0.4),  v:new THREE.Vector2(0.8, -1.4)},
-        {p:new THREE.Vector2(0.5, -0.4),  v:new THREE.Vector2(-0.8, 0.8)},
-    ];
     var ed_render = function(currTime) {
         requestAnimationFrame(ed_render);
         lastUpdate = lastUpdate || currTime - 1000/60;
         var delta = Math.min(100, currTime - lastUpdate);
         lastUpdate = currTime;
         mainrenderer.clear();
-        subviews[0].render(mainrenderer, 0.3, 0.4);
-        subviews[1].render(mainrenderer, 0.5, -0.4);
+        //subviews[0].render(mainrenderer, 0.3, 0.4);
+        //subviews[1].render(mainrenderer, 0.5, -0.4);
+        /*
         scene.each("sphere", function(s) {
             var m = new THREE.Matrix4();
             var axis = new THREE.Vector3(0.05,1,0);
             axis.normalize();
-            m.makeRotationAxis(axis, 0.001);
+            m.makeRotationAxis(axis, 0.0003);
             s.matrix.multiply(m);
             s.rotation.setFromRotationMatrix(s.matrix);
         });
+        */
+        mainrenderer.render(scene.getScene(0), camera);
         for (var i = 0; i < subviews.length; i++) {
             states[i] = simulatePosition(states[i], 0.001);
             subviews[i].render(mainrenderer, states[i].p.x-vw/2, states[i].p.y+vh/2);
         }
-        mainrenderer.render(scene.getScene(0), camera);
     };
     ed_render();
 }
