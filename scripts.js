@@ -86,6 +86,13 @@ var SharedScene = function() {
     };
     return that;
 };
+function rotate(mesh, axis, amount) {
+    var m = new THREE.Matrix4();
+    axis.normalize();
+    m.makeRotationAxis(axis, amount);
+    mesh.matrix.multiply(m);
+    mesh.rotation.setFromRotationMatrix(mesh.matrix);
+}
 
 function ed() {
     var container = document.getElementById("ed");
@@ -115,11 +122,18 @@ function ed() {
         geometry,
         geometry,
         geometry,
-        geometry,
         new THREE.SphereGeometry(1, 12, 8),
+        geometry,
     ];
     var mats = [
         new THREE.MeshPhongMaterial({color: 0xaaaaaa}),
+        new THREE.MeshBasicMaterial({wireframe: true}),
+        new THREE.MeshPhongMaterial({
+            color: 0x999999,
+            bumpMap: moonbumptex,
+            bumpScale: 0.04,
+        }),
+        new THREE.MeshPhongMaterial({color: 0xcccccc, shading: THREE.FlatShading}),
         new THREE.MeshPhongMaterial({
             map: tex,
             bumpMap: bumptex,
@@ -127,13 +141,6 @@ function ed() {
             specularMap: spectex,
             specular: 0x333333
         }),
-        new THREE.MeshPhongMaterial({
-            color: 0x999999,
-            bumpMap: moonbumptex,
-            bumpScale: 0.04,
-        }),
-        new THREE.MeshBasicMaterial({wireframe: true}),
-        new THREE.MeshPhongMaterial({color: 0xcccccc, shading: THREE.FlatShading}),
     ];
     var spheres = [];
     var states = [];
@@ -167,6 +174,8 @@ function ed() {
         spheres.push(new THREE.Mesh(geoms[i], mats[i]));
     }
     scene.addUnique("sphere", spheres);
+    rotate(spheres[spheres.length-1], new THREE.Vector3(0,1,0), 5.1);
+    rotate(spheres[spheres.length-1], new THREE.Vector3(0,0,1), -0.3);
 
     var mainrenderer = new THREE.WebGLRenderer();
     mainrenderer.setPixelRatio( window.devicePixelRatio );
