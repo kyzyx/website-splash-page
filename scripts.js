@@ -45,6 +45,47 @@ function con() {
 
 
 // -----------------------------------------
+var SharedScene = function() {
+    var objs_ = {};
+    var uniqueobjs_ = {};
+    var scenes_ = [];
+
+    var that = {
+        addScene: function() {
+            var scene = new THREE.Scene();
+            for (var o in objs_) {
+                scene.add(objs_[o]());
+            }
+            scenes_.push(scene);
+        },
+        addShared: function(name, o) {
+            objs_[name] = o;
+            for (var i = 0; i < scenes_.length; i++) {
+                scenes_[i].add(o());
+            }
+        },
+        addUnique: function(name, o) {
+            uniqueobjs_[name] = o;
+            for (var i = 0; i < scenes_.length; i++) {
+                scenes_[i].add(o[i]);
+            }
+        },
+        addSingle: function(i, o) {
+            scenes_[i].add(o);
+        },
+        getScene: function(i) {
+            return scenes_[i];
+        },
+        each: function(name, f) {
+            for (var i = 0; i < scenes_.length; i++) {
+                if (name in uniqueobjs_) {
+                    f(uniqueobjs_[name][i]);
+                }
+            }
+        }
+    };
+    return that;
+};
 
 function ed() {
     var container = document.getElementById("ed");
@@ -95,7 +136,6 @@ function ed() {
         new THREE.MeshPhongMaterial({color: 0xcccccc, shading: THREE.FlatShading}),
     ];
     var spheres = [];
-    var subviews = [];
     var states = [];
     for (var i = 0; i < mats.length; i++) {
         var pt = new THREE.Vector2(0,0);
@@ -125,11 +165,6 @@ function ed() {
     for (var i = 0; i < mats.length; i++) {
         scene.addScene();
         spheres.push(new THREE.Mesh(geoms[i], mats[i]));
-        if (i > 0) {
-            var subview = Subview(scene.getScene(i), ps, vw, vh);
-            subviews.push(subview);
-            scene.addSingle(0, subview.getMesh());
-        }
     }
     scene.addUnique("sphere", spheres);
 
@@ -171,8 +206,6 @@ function ed() {
         var delta = Math.min(100, currTime - lastUpdate);
         lastUpdate = currTime;
         mainrenderer.clear();
-        //subviews[0].render(mainrenderer, 0.3, 0.4);
-        //subviews[1].render(mainrenderer, 0.5, -0.4);
         /*
         scene.each("sphere", function(s) {
             var m = new THREE.Matrix4();
@@ -184,10 +217,19 @@ function ed() {
         });
         */
         mainrenderer.render(scene.getScene(0), camera);
-        for (var i = 0; i < subviews.length; i++) {
+        mainrenderer.enableScissorTest(true);
+        mainrenderer.setClearColor(0x1a1a1a);
+        for (var i = 1; i < states.length; i++) {
             states[i] = simulatePosition(states[i], 0.001);
-            subviews[i].render(mainrenderer, states[i].p.x-vw/2, states[i].p.y+vh/2);
+            mainrenderer.setScissor(
+                    ps*(states[i].p.x-vw/2),
+                    ps*(states[i].p.y+1.25 - vh/2),
+                    ps*vw, ps*vh);
+            mainrenderer.clear();
+            mainrenderer.render(scene.getScene(i), camera);
         }
+        mainrenderer.enableScissorTest(false);
+        mainrenderer.setClearColor(0x000000);
     };
     ed_render();
 }
