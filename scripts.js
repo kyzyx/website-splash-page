@@ -146,6 +146,7 @@ function ed() {
         mainrenderer.setSize(nw, nh);
         camera.right = 2.5*nw/nh;
         camera.updateProjectionMatrix();
+        ps = nh/2.5;
     }
     window.addEventListener('resize', resizeCanvas, false);
 
