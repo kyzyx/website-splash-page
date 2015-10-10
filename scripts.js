@@ -1,8 +1,8 @@
-var conCircle = document.body.querySelector('#con .circle');
-var width = conCircle.offsetWidth;
-var height = conCircle.offsetHeight;
+var circle = document.body.querySelector('#con .circle');
+var width = circle.offsetWidth;
+var height = circle.offsetHeight;
 
-var conColors = [
+var colors = [
   '#ff0000',
   '#00ff00',
   '#0000ff',
@@ -17,10 +17,30 @@ var conColors = [
   '#0088ff'
 ];
 
+var imgs = document.querySelectorAll('#con .images img');
+
+var numTriangles = 350;
+var triangles;
+var canvas;
+
+function setCanvas() {
+  var img = imgs[Math.floor(Math.random() * imgs.length)];
+
+  canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+}
+
+function checkPixel(top, left) {
+  return (canvas.getContext('2d').getImageData(top, left, 1, 1).data[0]);
+}
+
+
 function createTriangle() {
   var div = document.createElement('div');
   div.classList.add('triangle');
-  conCircle.appendChild(div);
+  circle.appendChild(div);
 }
 
 function initTriangle(triangle, angle) {
@@ -37,22 +57,6 @@ function setTriangle(triangle, top, left, rotation, color) {
   triangle.style.transform = 'rotate(' + rotation + 'deg)';
 }
 
-var numTriangles = 200;
-var triangles;
-var canvas;
-
-function setCanvas() {
-  var img = document.querySelector('#con .images img');
-
-  canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-}
-
-function checkPixel(top, left) {
-  return (canvas.getContext('2d').getImageData(top, left, 1, 1).data[0]);
-}
 
 function createTriangles() {
   for (var i = 0; i < numTriangles; i++) {
@@ -88,24 +92,27 @@ function setTriangles() {
     left -= 2; // Close to center of triangle
 
     rotation = Math.random() * 360;
-    color = conColors[Math.floor(Math.random() * conColors.length)];
+    color = colors[Math.floor(Math.random() * colors.length)];
 
     setTriangle(triangles[i], top, left, rotation, color);
   }
 }
 
-function con() {
+function createPattern() {
   setCanvas();
-
-  createTriangles();
-  triangles = conCircle.querySelectorAll('.triangle');
 
   initTriangles();
 
-  setTimeout(function() {
-    setTriangles();
-  }, 0);
+  setTimeout(setTriangles, 0);
 }
+
+function con() {
+  createTriangles();
+  triangles = circle.querySelectorAll('.triangle');
+
+  createPattern();
+}
+
 
 
 // -----------------------------------------
