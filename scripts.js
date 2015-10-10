@@ -1,4 +1,7 @@
 var conCircle = document.body.querySelector('#con .circle');
+var width = conCircle.offsetWidth;
+var height = conCircle.offsetHeight;
+
 var conColors = [
   '#ff0000',
   '#00ff00',
@@ -36,28 +39,24 @@ function setTriangle(triangle, top, left, rotation, color) {
 
 var numTriangles = 200;
 var triangles;
+var canvas;
 
-function setTriangles() {
-  var radius = 40;
-  var top = 0;
-  var left = 0;
+function setCanvas() {
+  var img = document.querySelector('#con .images img');
 
-  var rotation = 0;
-  var color = 'white';
+  canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+}
 
+function checkPixel(top, left) {
+  return (canvas.getContext('2d').getImageData(top, left, 1, 1).data[0]);
+}
+
+function createTriangles() {
   for (var i = 0; i < numTriangles; i++) {
-    while (true) {
-      top = Math.random() * radius * 2 - 2;  // In units of vh
-      left = Math.random() * radius - 2;  // In units of vh
-      var x = left - radius + 2;
-      var y = top - radius + 2;
-      if (x*x + y*y <= (radius+2)*(radius+2)) break;
-    }
-
-    rotation = Math.random() * 360;
-    color = conColors[Math.floor(Math.random() * conColors.length)];
-
-    setTriangle(triangles[i], top, left, rotation, color);
+    createTriangle();
   }
 }
 
@@ -70,13 +69,34 @@ function initTriangles() {
   }
 }
 
-function createTriangles() {
+function setTriangles() {
+  var radius = 40;
+  var top = 0;
+  var left = 0;
+
+  var rotation = 0;
+  var color = 'white';
+
   for (var i = 0; i < numTriangles; i++) {
-    createTriangle();
+    for (var j = 0; j < 1000; j++) {
+      top = Math.random() * radius * 2;  // In units of vh
+      left = Math.random() * radius;  // In units of vh
+
+      if (checkPixel(left * width/radius, top * height/radius/2)) break;
+    }
+    top -= 2; // Close to center of triangle
+    left -= 2; // Close to center of triangle
+
+    rotation = Math.random() * 360;
+    color = conColors[Math.floor(Math.random() * conColors.length)];
+
+    setTriangle(triangles[i], top, left, rotation, color);
   }
 }
 
 function con() {
+  setCanvas();
+
   createTriangles();
   triangles = conCircle.querySelectorAll('.triangle');
 
