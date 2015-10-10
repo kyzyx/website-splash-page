@@ -14,33 +14,77 @@ var conColors = [
   '#0088ff'
 ];
 
-function createTriangle(top, left, rotation, color) {
+function createTriangle() {
   var div = document.createElement('div');
   div.classList.add('triangle');
-  div.style.borderBottomColor = color;
-  div.style.top = top + 'vh';
-  div.style.left = left + 'vh';
-  div.style.transform = 'rotate(' + rotation + 'deg)';
   conCircle.appendChild(div);
 }
 
-function generateTriangles() {
+function initTriangle(triangle, angle) {
+  var distance = Math.max(window.outerWidth, window.outerHeight) *
+                 (Math.random() * 2 + 0.5);  // Multiplier for slight delay
+  triangle.style.top = Math.sin(angle)*distance + 'vh';
+  triangle.style.left = Math.cos(angle)*distance - distance + 'vh';
+}
+
+function setTriangle(triangle, top, left, rotation, color) {
+  triangle.style.borderBottomColor = color;
+  triangle.style.top = top + 'vh';
+  triangle.style.left = left + 'vh';
+  triangle.style.transform = 'rotate(' + rotation + 'deg)';
+}
+
+var numTriangles = 200;
+var triangles;
+
+function setTriangles() {
+  var radius = 40;
   var top = 0;
   var left = 0;
+
   var rotation = 0;
   var color = 'white';
-  for (var i = 0; i < 200; i++) {
-    top = Math.floor(Math.random() * 100) - 10;  // In units of vh
-    left = Math.floor(Math.random() * 60) - 10;  // In units of vh
-    rotation = Math.floor(Math.random() * 360);
+
+  for (var i = 0; i < numTriangles; i++) {
+    while (true) {
+      top = Math.random() * radius * 2 - 2;  // In units of vh
+      left = Math.random() * radius - 2;  // In units of vh
+      var x = left - radius + 2;
+      var y = top - radius + 2;
+      if (x*x + y*y <= (radius+2)*(radius+2)) break;
+    }
+
+    rotation = Math.random() * 360;
     color = conColors[Math.floor(Math.random() * conColors.length)];
 
-    createTriangle(top, left, rotation, color);
+    setTriangle(triangles[i], top, left, rotation, color);
+  }
+}
+
+function initTriangles() {
+  var angle = 0;
+
+  for (var i = 0; i < numTriangles; i++) {
+    angle = Math.random() * 180 + 90;
+    initTriangle(triangles[i], angle);
+  }
+}
+
+function createTriangles() {
+  for (var i = 0; i < numTriangles; i++) {
+    createTriangle();
   }
 }
 
 function con() {
-  generateTriangles();
+  createTriangles();
+  triangles = conCircle.querySelectorAll('.triangle');
+
+  initTriangles();
+
+  setTimeout(function() {
+    setTriangles();
+  }, 0);
 }
 
 

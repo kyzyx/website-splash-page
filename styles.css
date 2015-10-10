@@ -13,8 +13,6 @@
   width: 40vh;
 
   border-radius: 40vh 0 0 40vh;
-
-  overflow: hidden;
 }
 
 #con .triangle {
@@ -24,10 +22,12 @@
   height: 0;
 
   border-style: solid;
-  border-width: 0 5.6vh 9.7vh;
+  border-width: 0 2.8vh 4.85vh;
   border-color: transparent transparent white;
 
   opacity: 0.5;
+
+  transition: left 0.75s ease, top 0.75s ease;
 }
 
 .half-panel {
