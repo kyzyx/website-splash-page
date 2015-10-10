@@ -1,6 +1,7 @@
 var circle = document.body.querySelector('#con .circle');
-var width = circle.offsetWidth;
-var height = circle.offsetHeight;
+var width = circle.offsetWidth;  // In pixels
+var height = circle.offsetHeight;  // In pixels
+var radius = 40;  // In vh
 
 var colors = [
   '#ff0000',
@@ -29,73 +30,74 @@ var numTriangles = 150;
 var triangles;
 var imageData;
 
+// Use an image to sample, check if the location is non-black.
 function checkPixel(top, left) {
   var index = 4*(Math.floor(left)*width + Math.floor(top));
   return imageData[index];
 }
 
-
-function initTriangle(angle) {
-  var div = document.createElement('div');
-  div.classList.add('triangle');
+// Create a triangle and attach it outside of the viewport.
+function initTriangle(angle, rotation, color) {
+  var triangle = document.createElement('div');
+  triangle.classList.add('triangle');
 
   var distance = Math.max(window.outerWidth, window.outerHeight) *
                  (Math.random() * 2 + 0.5);  // Multiplier for slight delay
-  div.style.top = Math.sin(angle)*distance + 'vh';
-  div.style.left = Math.cos(angle)*distance - distance + 'vh';
+  triangle.style.top = Math.sin(angle)*distance + 'vh';
+  triangle.style.left = Math.cos(angle)*distance - distance + 'vh';
+  triangle.style.borderBottomColor = color;
+  triangle.style.transform = 'rotate(' + rotation + 'deg)';
 
-  circle.appendChild(div);
+  circle.appendChild(triangle);
 }
 
-function setTriangle(triangle, top, left, rotation, color) {
-  triangle.style.borderBottomColor = color;
+// Set final position of a triangle, which will animate in.
+function setTriangle(triangle, top, left) {
   triangle.style.top = top + 'vh';
   triangle.style.left = left + 'vh';
-  triangle.style.transform = 'rotate(' + rotation + 'deg)';
 }
 
-
+// Init all triangles.
 function initTriangles() {
   var angle = 0;
-
-  for (var i = 0; i < numTriangles; i++) {
-    angle = Math.random() * Math.PI + Math.PI/2;
-    initTriangle(angle);
-  }
-}
-
-function setTriangles() {
-  var radius = 40;
-  var top = 0;
-  var left = 0;
-
   var rotation = 0;
   var color = 'white';
 
   for (var i = 0; i < numTriangles; i++) {
-    for (var j = 0; j < 1000; j++) {
-      top = Math.random() * radius * 2;  // In units of vh
-      left = Math.random() * radius;  // In units of vh
-
-      if (checkPixel(left * width/radius, top * height/radius/2)) break;
-    }
-    top -= 2; // Close to center of triangle
-    left -= 2; // Close to center of triangle
-
+    angle = Math.random() * Math.PI + Math.PI/2;
     rotation = Math.random() * 360;
     color = colors[Math.floor(Math.random() * colors.length)];
 
-    setTriangle(triangles[i], top, left, rotation, color);
+    initTriangle(angle, rotation, color);
+  }
+}
+
+// Set final positions of all triangles.
+function setTriangles() {
+  var top = 0;
+  var left = 0;
+
+  for (var i = 0; i < numTriangles; i++) {
+    for (var j = 0; j < 100; j++) {
+      top = Math.random() * radius * 2;  // In vh
+      left = Math.random() * radius;  // In vh
+
+      if (checkPixel(left * width/radius, top * height/radius/2)) break;
+    }
+    top -= 2; // Shift by amount to give center of triangle
+    left -= 2; // Shift by amount to give center of triangle
+
+    setTriangle(triangles[i], top, left);
   }
 }
 
 function con() {
+  initTriangles();
+  triangles = circle.querySelectorAll('.triangle');
+
   var canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-
-  initTriangles();
-  triangles = circle.querySelectorAll('.triangle');
 
   var img = new Image();
   img.onload = function() {
