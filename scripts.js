@@ -17,37 +17,33 @@ var colors = [
   '#0088ff'
 ];
 
-var imgs = document.querySelectorAll('#con .images img');
+var imgs = [
+  'images/circle.png',
+  'images/radial.png',
+  'images/stripes.png',
+  'images/dots.png',
+  'images/target.png'
+];
 
 var numTriangles = 350;
 var triangles;
 var canvas;
-
-function setCanvas() {
-  var img = imgs[Math.floor(Math.random() * imgs.length)];
-
-  canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-}
 
 function checkPixel(top, left) {
   return (canvas.getContext('2d').getImageData(top, left, 1, 1).data[0]);
 }
 
 
-function createTriangle() {
+function initTriangle(angle) {
   var div = document.createElement('div');
   div.classList.add('triangle');
-  circle.appendChild(div);
-}
 
-function initTriangle(triangle, angle) {
   var distance = Math.max(window.outerWidth, window.outerHeight) *
                  (Math.random() * 2 + 0.5);  // Multiplier for slight delay
-  triangle.style.top = Math.sin(angle)*distance + 'vh';
-  triangle.style.left = Math.cos(angle)*distance - distance + 'vh';
+  div.style.top = Math.sin(angle)*distance + 'vh';
+  div.style.left = Math.cos(angle)*distance - distance + 'vh';
+
+  circle.appendChild(div);
 }
 
 function setTriangle(triangle, top, left, rotation, color) {
@@ -58,18 +54,12 @@ function setTriangle(triangle, top, left, rotation, color) {
 }
 
 
-function createTriangles() {
-  for (var i = 0; i < numTriangles; i++) {
-    createTriangle();
-  }
-}
-
 function initTriangles() {
   var angle = 0;
 
   for (var i = 0; i < numTriangles; i++) {
-    angle = Math.random() * 180 + 90;
-    initTriangle(triangles[i], angle);
+    angle = Math.random() * Math.PI + Math.PI/2;
+    initTriangle(angle);
   }
 }
 
@@ -98,19 +88,21 @@ function setTriangles() {
   }
 }
 
-function createPattern() {
-  setCanvas();
-
-  initTriangles();
-
-  setTimeout(setTriangles, 0);
-}
-
 function con() {
-  createTriangles();
-  triangles = circle.querySelectorAll('.triangle');
+  canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
 
-  createPattern();
+  var img = new Image();
+  img.onload = function() {
+    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+    initTriangles();
+    triangles = circle.querySelectorAll('.triangle');
+
+    setTimeout(setTriangles, 0);
+  };
+  img.src = imgs[Math.floor(Math.random() * imgs.length)];
 }
 
 

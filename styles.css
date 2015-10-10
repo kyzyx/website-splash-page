@@ -4,10 +4,6 @@
 #con {
 }
 
-#con .images {
-  display: none;
-}
-
 #con .circle {
   position: absolute;
   top: 10vh;
