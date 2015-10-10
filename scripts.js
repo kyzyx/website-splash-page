@@ -25,12 +25,13 @@ var imgs = [
   'images/target.png'
 ];
 
-var numTriangles = 350;
+var numTriangles = 150;
 var triangles;
-var canvas;
+var imageData;
 
 function checkPixel(top, left) {
-  return (canvas.getContext('2d').getImageData(top, left, 1, 1).data[0]);
+  var index = 4*(Math.floor(left)*width + Math.floor(top));
+  return imageData[index];
 }
 
 
@@ -89,18 +90,20 @@ function setTriangles() {
 }
 
 function con() {
-  canvas = document.createElement('canvas');
+  var canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
+
+  initTriangles();
+  triangles = circle.querySelectorAll('.triangle');
 
   var img = new Image();
   img.onload = function() {
     canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
-    initTriangles();
-    triangles = circle.querySelectorAll('.triangle');
+    imageData = canvas.getContext('2d').getImageData(0, 0, width, height).data;
 
-    setTimeout(setTriangles, 0);
+    setTriangles();
   };
   img.src = imgs[Math.floor(Math.random() * imgs.length)];
 }
