@@ -27,7 +27,7 @@
 
   opacity: 0.5;
 
-  transition: left 0.75s, top 0.75s;
+  transition: all 1s;
 }
 
 .half-panel {

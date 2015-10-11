@@ -26,8 +26,11 @@ var imgs = [
   'images/target.png'
 ];
 
-var numTriangles = 150;
-var triangles;
+var numTriangles = 200;
+var triangles = [];
+var rotations = [];
+var xs = [];
+var ys = [];
 var imageData;
 
 // Use an image to sample, check if the location is non-black.
@@ -36,44 +39,132 @@ function checkPixel(top, left) {
   return imageData[index];
 }
 
-// Create a triangle and attach it outside of the viewport.
-function initTriangle(angle, rotation, color) {
-  var triangle = document.createElement('div');
-  triangle.classList.add('triangle');
+// Update the transform property of the ith triangle.
+function updateTransform(i) {
+  if (rotations[i] == undefined) rotations[i] = 0;
+  if (xs[i] == undefined) xs[i] = 0;
+  if (ys[i] == undefined) ys[i] = 0;
 
-  var distance = Math.max(window.outerWidth, window.outerHeight) *
-                 (Math.random() * 2 + 0.5);  // Multiplier for slight delay
-  triangle.style.top = Math.sin(angle)*distance + 'vh';
-  triangle.style.left = Math.cos(angle)*distance - distance + 'vh';
-  triangle.style.borderBottomColor = color;
-  triangle.style.transform = 'rotate(' + rotation + 'deg)';
-
-  circle.appendChild(triangle);
+  triangles[i].style.transform = 'translate(' + xs[i] + ', ' + ys[i] + ') ' +
+                                 'rotate(' + rotations[i] + 'deg)';
 }
 
-// Set final position of a triangle, which will animate in.
-function setTriangle(triangle, top, left) {
-  triangle.style.top = top + 'vh';
-  triangle.style.left = left + 'vh';
-}
-
-// Init all triangles.
-function initTriangles() {
-  var angle = 0;
-  var rotation = 0;
-  var color = 'white';
-
+// Create all triangle divs.
+function createTriangles() {
+  var triangle;
   for (var i = 0; i < numTriangles; i++) {
-    angle = Math.random() * Math.PI + Math.PI/2;
-    rotation = Math.random() * 360;
-    color = colors[Math.floor(Math.random() * colors.length)];
+    triangle = document.createElement('div');
+    triangle.classList.add('triangle');
+    circle.appendChild(triangle);
 
-    initTriangle(angle, rotation, color);
+    triangles[i] = triangle;
   }
 }
 
-// Set final positions of all triangles.
-function setTriangles() {
+// Position all triangles outside the viewport.
+function initTriangles() {
+  var angle = 0;
+  var distance = 0;
+  var x = 0;
+  var y = 0;
+
+  for (var i = 0; i < numTriangles; i++) {
+    angle = Math.random() * Math.PI + Math.PI/2;
+    distance = Math.max(window.outerWidth, window.outerHeight) *
+                 (Math.random() + 1) + 100;
+
+    xs[i] = Math.cos(angle)*distance - distance + 'px';
+    ys[i] = Math.sin(angle)*distance + 'px';
+
+    updateTransform(i);
+  }
+}
+
+// Rotate all triangles by an additional amount.
+function rotateTriangles() {
+  var rotation = 0;
+  for (var i = 0; i < numTriangles; i++) {
+    rotation = (Math.random() - 0.5) * 360 * 3;
+
+    if (rotations[i] == undefined) rotations[i] = rotation;
+    else rotations[i] += rotation;
+
+    updateTransform(i);
+  }
+}
+
+// Color all triangles.
+// Warning: this causes repaint and is inefficient.
+function colorTriangles() {
+  var color = 'white';
+  for (var i = 0; i < numTriangles; i++) {
+    color = colors[Math.floor(Math.random() * colors.length)];
+
+    triangles[i].style.borderBottomColor = color;
+  }
+}
+
+// Fade all triangles in, out, then back again.
+function winkTriangles() {
+  // Fade in
+  var opacity = 0;
+  for (var i = 0; i < numTriangles; i++) {
+    opacity = Math.random() * 0.5 + 0.5;
+
+    triangles[i].style.opacity = opacity;
+  }
+
+  setTimeout(function() {
+    // Fade out
+    var opacity2 = 1;
+    for (var i = 0; i < numTriangles; i++) {
+      opacity2 = Math.random() * 0.25;
+
+      triangles[i].style.opacity = opacity2;
+    }
+
+    setTimeout(function() {
+      // Reset
+      for (var i = 0; i < numTriangles; i++) {
+        triangles[i].style.opacity = '';
+      }
+    }, 1000);
+
+  }, 500);
+}
+
+// Shrink, then grow, then reset all triangles.
+function pulseTriangles() {
+  // Shrink
+  var scale = 1;
+  for (var i = 0; i < numTriangles; i++) {
+    scale = Math.random() * 0.75;
+
+    triangles[i].style.transform += 'scale(' + scale + ')';
+  }
+
+  setTimeout(function() {
+    // Grow
+    var scale2 = 1;
+    for (var i = 0; i < numTriangles; i++) {
+      scale2 = Math.random() * 2 + 1;
+
+      updateTransform(i);
+      triangles[i].style.transform += 'scale(' + scale2 + ')';
+    }
+
+    setTimeout(function() {
+      // Reset
+      for (var i = 0; i < numTriangles; i++) {
+        updateTransform(i);
+      }
+    }, 1000);
+
+  }, 500);
+}
+
+// Position all triangles in the selected pattern.
+function positionTriangles() {
   var top = 0;
   var left = 0;
 
@@ -87,14 +178,19 @@ function setTriangles() {
     top -= 2; // Shift by amount to give center of triangle
     left -= 2; // Shift by amount to give center of triangle
 
-    setTriangle(triangles[i], top, left);
+    xs[i] = left + 'vh';
+    ys[i] = top + 'vh';
+
+    updateTransform(i);
   }
 }
 
-function con() {
-  initTriangles();
-  triangles = circle.querySelectorAll('.triangle');
+function setTriangles() {
+  rotateTriangles();
+  positionTriangles();
+}
 
+function createCanvas() {
   var canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -102,12 +198,45 @@ function con() {
   var img = new Image();
   img.onload = function() {
     canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-
     imageData = canvas.getContext('2d').getImageData(0, 0, width, height).data;
 
     setTriangles();
   };
   img.src = imgs[Math.floor(Math.random() * imgs.length)];
+}
+
+function refreshCanvas() {
+  var refresh = Math.random() * 5;
+  if (refresh < 1) {
+    rotateTriangles();
+    setTimeout(rotateTriangles, 1000);
+  }
+  else if (refresh < 2) {
+    positionTriangles();
+    setTimeout(positionTriangles, 1000);
+  }
+  else if (refresh < 3) {
+    initTriangles();
+    setTimeout(createCanvas, 1000);
+  }
+  else if (refresh < 4) {
+    winkTriangles();
+  }
+  else if (refresh < 5) {
+    pulseTriangles();
+  }
+
+  setTimeout(refreshCanvas, 10000);
+}
+
+function con() {
+  createTriangles();
+  initTriangles();
+  colorTriangles();
+
+  createCanvas();
+
+  setTimeout(refreshCanvas, 10000);
 }
 
 
