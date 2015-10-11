@@ -20,8 +20,12 @@ var colors = [
 
 var imgs = [
   'images/circle.png',
-  'images/radial.png',
-  'images/stripes.png',
+  'images/spokes.png',
+  'images/star.png',
+  'images/dstripes.png',
+  'images/hstripes.png',
+  'images/vstripes.png',
+  'images/zigzags.png',
   'images/dots.png',
   'images/target.png'
 ];
